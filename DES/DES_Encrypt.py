@@ -1,3 +1,9 @@
+PlainText = open('text.txt', encoding='utf-8').read()
+"""Открытый текст"""
+
+Key = open('key.txt', encoding='utf-8').read()
+"""Открытый ключ"""
+
 InitialPermutation = [58, 50, 42, 34, 26, 18, 10, 2,
                       60, 52, 44, 36, 28, 20, 12, 4,
                       62, 54, 46, 38, 30, 22, 14, 6,
@@ -27,12 +33,12 @@ KeyPreparation = [57, 49, 41, 33, 25, 17, 9, 1,
                   29, 21, 13, 5, 28, 20, 12, 4]
 """Сокращение ключа с 64 до 56 бит"""
 
-PBoxCompression = [14, 17, 11, 24, 1, 5, 3, 28,
-                   15, 6, 21, 10, 23, 19, 12, 4,
-                   26, 8, 16, 7, 27, 20, 13, 2,
-                   41, 52, 31, 37, 47, 55, 30, 40,
-                   51, 45, 33, 48, 44, 49, 39, 56,
-                   34, 53, 46, 42, 50, 36, 29, 32]
+KeyCompression = [14, 17, 11, 24, 1, 5, 3, 28,
+                  15, 6, 21, 10, 23, 19, 12, 4,
+                  26, 8, 16, 7, 27, 20, 13, 2,
+                  41, 52, 31, 37, 47, 55, 30, 40,
+                  51, 45, 33, 48, 44, 49, 39, 56,
+                  34, 53, 46, 42, 50, 36, 29, 32]
 """Сокращение ключа с 56 до 48 бит, получение раундового ключа"""
 
 PBoxFinal = [16, 7, 20, 21, 29, 12, 28, 17,
@@ -47,7 +53,7 @@ PBoxExtention = [32, 1, 2, 3, 4, 5, 4, 5,
                  16, 17, 18, 19, 20, 21, 20, 21,
                  22, 23, 24, 25, 24, 25, 26, 27,
                  28, 29, 28, 29, 30, 31, 32, 1]
-"""P-бокс расширения. Служит для расширения правой части текста до 48 бит"""
+"""РPбокс расширения. Служит для расширения правой части текста до 48 бит"""
 
 SBoxes = [
     [[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
@@ -92,12 +98,6 @@ SBoxes = [
 ]
 """Таблица S-боксов"""
 
-PlainText = open('text.txt', encoding='utf-8').read()
-"""Открытый текст"""
-
-Key = open('key.txt', encoding='utf-8').read()
-"""Открытый ключ"""
-
 BinaryText = ""
 """Текст в бинарном формате"""
 
@@ -110,13 +110,11 @@ LeftBinaryText = ''
 RightBinaryText = ''
 """Правая часть бинарного текста"""
 
-Permutation = ''
-"""Вспомогательная переменная, участвующая при перестановках и XOR.
-Значение изменяемой строки перезаписывается информацией из Permutation
-"""
+HelpVar = ''
+"""Вспомогательная переменная"""
 
 RoundKeys = []
-"""Раундоовые ключи"""
+"""Список раундовых ключей"""
 
 EncodedText = ''
 """Зашифрованный текст"""
@@ -133,10 +131,10 @@ for symbol in PlainText:
     BinaryText += BinarySymbol
 while len(BinaryText) < 64:
     BinaryText = '00000000'+BinaryText
-Permutation = ''
-for i in InitialPermutation:
-    Permutation += BinaryText[i-1]
-BinaryText = Permutation
+HelpVar = ''
+for Round in InitialPermutation:
+    HelpVar += BinaryText[Round-1]
+BinaryText = HelpVar
 
 # перевод ключа в бинарный формат и сокращение до 56 бит
 for symbol in Key:
@@ -148,89 +146,88 @@ while len(BinaryKey) < 64:
     BinaryKey = '00000000'+BinaryKey
 
 # Сокращение ключа до 56 бит
-Permutation = ''
-for i in KeyPreparation:
-    Permutation += BinaryKey[i-1]
-BinaryKey = Permutation
+HelpVar = ''
+for Round in KeyPreparation:
+    HelpVar += BinaryKey[Round-1]
+BinaryKey = HelpVar
 
 
 '''СОЗДАНИЕ РАУНДОВЫХ КЛЮЧЕЙ'''
-for i in range(16):
-    Permutation = ''
-    if i in [0, 1, 8, 15]:
+for Round in range(16):
+    HelpVar = ''
+    if Round in [0, 1, 8, 15]:
         BitShift = BinaryKey[1:28]+BinaryKey[0] + \
             BinaryKey[29:]+BinaryKey[28]
-        for j in PBoxCompression:
-            Permutation += BitShift[j-1]
     else:
         BitShift = BinaryKey[2:28]+BinaryKey[0:2] + \
             BinaryKey[30:]+BinaryKey[28:30]
-        for j in PBoxCompression:
-            Permutation += BitShift[j-1]
+    for Index in KeyCompression:
+        HelpVar += BitShift[Index-1]
 
-    RoundKeys.append(Permutation)
+    RoundKeys.append(HelpVar)
 
 
 '''АЛГОРИТМ ШИФРОВАНИЯ'''
-for i in range(16):
+for Round in range(16):
     LeftBinaryText = BinaryText[:32]
     RightBinaryText = BinaryText[32:]
 
     '''ФУНКЦИЯ DES'''
     # расширение правой части текста
-    Permutation = ''
-    for j in PBoxExtention:
-        Permutation += RightBinaryText[j-1]
-    DesFunction = Permutation
+    HelpVar = ''
+    for Index in PBoxExtention:
+        HelpVar += RightBinaryText[Index-1]
+    DesFunction = HelpVar
 
     # XOR правой части текста и раундового ключа
-    Permutation = ''
-    for j in range(48):
-        if DesFunction[j] == RoundKeys[i][j]:
-            Permutation += '0'
+    HelpVar = ''
+    for Index in range(48):
+        if DesFunction[Index] == RoundKeys[Round][Index]:
+            HelpVar += '0'
         else:
-            Permutation += '1'
-    DesFunction = Permutation
+            HelpVar += '1'
+    DesFunction = HelpVar
 
     # Применяем S-боксы
-    Permutation = ''
-    for j in range(0, 48, 6):
+    HelpVar = ''
+    for Index in range(0, 48, 6):
         CurrentSBox = 0
-        a = bin(SBoxes[CurrentSBox][int(DesFunction[j]+DesFunction[j+5], base=2)][int(
-            DesFunction[j+1:j+5], base=2)])[2:]
+        a = bin(SBoxes[CurrentSBox][int(DesFunction[Index]+DesFunction[Index+5], base=2)][int(
+            DesFunction[Index+1:Index+5], base=2)])[2:]
         while len(a) < 4:
             a = '0'+a
-        Permutation += a
+        HelpVar += a
         CurrentSBox += 1
-    DesFunction = Permutation
+    DesFunction = HelpVar
 
     # Применяем прямой P-бокс
-    Permutation = ''
-    for j in PBoxFinal:
-        Permutation += DesFunction[j-1]
-    DesFunction = Permutation
+    HelpVar = ''
+    for Index in PBoxFinal:
+        HelpVar += DesFunction[Index-1]
+    DesFunction = HelpVar
 
-    # XOR левой и правой части текста
-    Permutation = ''
-    for j in range(32):
-        if LeftBinaryText[j] == DesFunction[j]:
-            Permutation += '0'
+    # XOR левой части текста и функции DES
+    HelpVar = ''
+    for Index in range(32):
+        if LeftBinaryText[Index] == DesFunction[Index]:
+            HelpVar += '0'
         else:
-            Permutation += '1'
-    LeftBinaryText = Permutation
+            HelpVar += '1'
+    LeftBinaryText = HelpVar
+
     # меняем местами правую и левую части текста
     BinaryText = RightBinaryText+LeftBinaryText
-    if i == 15:
+    if Round == 15:
         BinaryText = BinaryText[32:]+BinaryText[:32]
 
 
 # финальная перестановка
-Permutation = ''
-for i in FinalPermutation:
-    Permutation += BinaryText[i-1]
-BinaryText = Permutation
+HelpVar = ''
+for Round in FinalPermutation:
+    HelpVar += BinaryText[Round-1]
+BinaryText = HelpVar
 
 # получаем шифрованное собщение
-for i in range(0, 64, 8):
-    EncodedText += chr(int(BinaryText[i:i+8], base=2))
+for Index in range(0, 64, 8):
+    EncodedText += chr(int(BinaryText[Index:Index+8], base=2))
 print(EncodedText)
