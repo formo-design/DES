@@ -213,7 +213,7 @@ for i in range(16):
     # XOR левой и правой части текста
     Permutation = ''
     for j in range(32):
-        if LeftBinaryText[j] == RightBinaryText[j]:
+        if LeftBinaryText[j] == DesFunction[j]:
             Permutation += '0'
         else:
             Permutation += '1'
