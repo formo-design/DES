@@ -92,10 +92,10 @@ SBoxes = [
 ]
 """Таблица S-боксов"""
 
-PlainText = open('./text.txt', encoding='utf-8').read()
+PlainText = open('text.txt', encoding='utf-8').read()
 """Открытый текст"""
 
-Key = open('./key.txt', encoding='utf-8').read()
+Key = open('key.txt', encoding='utf-8').read()
 """Открытый ключ"""
 
 BinaryText = ""
@@ -124,8 +124,7 @@ EncodedText = ''
 DesFunction = ''
 """Переменная, принимающая изменения в функции DES"""
 
-
-'''ПОДГОТОВКА БИНАРНЫХ ТЕКСТА, КЛЮЧА И ВЕКТОРА ИНИЦИАЛИЗАЦИИ'''
+'''ПОДГОТОВКА БИНАРНЫХ ТЕКСТА И КЛЮЧА'''
 # перевод открытого текста в бинарный формат и начальная перестановка
 for symbol in PlainText:
     BinarySymbol = bin(ord(symbol))[2:]
@@ -159,18 +158,18 @@ BinaryKey = Permutation
 for i in range(16):
     Permutation = ''
     if i in [0, 1, 8, 15]:
-        BitShift = BinaryKey[1:32]+BinaryKey[0] + \
-            BinaryKey[33:]+BinaryKey[32]
+        BitShift = BinaryKey[1:28]+BinaryKey[0] + \
+            BinaryKey[29:]+BinaryKey[28]
         for j in PBoxCompression:
             Permutation += BitShift[j-1]
     else:
-        BitShift = BinaryKey[2:32]+BinaryKey[0:2] + \
-            BinaryKey[34:]+BinaryKey[32:34]
+        BitShift = BinaryKey[2:28]+BinaryKey[0:2] + \
+            BinaryKey[30:]+BinaryKey[28:30]
         for j in PBoxCompression:
             Permutation += BitShift[j-1]
 
     RoundKeys.append(Permutation)
-
+RoundKeys.reverse()
 
 '''АЛГОРИТМ ШИФРОВАНИЯ'''
 for i in range(16):
@@ -184,7 +183,7 @@ for i in range(16):
         Permutation += RightBinaryText[j-1]
     DesFunction = Permutation
 
-    # XOR правой части IV и раундового ключа
+    # XOR правой части текста и раундового ключа
     Permutation = ''
     for j in range(48):
         if DesFunction[j] == RoundKeys[i][j]:
@@ -211,7 +210,7 @@ for i in range(16):
         Permutation += DesFunction[j-1]
     DesFunction = Permutation
 
-    # XOR левой и правой части IV
+    # XOR левой и правой части текста
     Permutation = ''
     for j in range(32):
         if LeftBinaryText[j] == RightBinaryText[j]:
@@ -219,25 +218,19 @@ for i in range(16):
         else:
             Permutation += '1'
     LeftBinaryText = Permutation
-    # меняем местами правую и левую части IV
-    IV = RightBinaryText+LeftBinaryText
+    # меняем местами правую и левую части текста
+    BinaryText = RightBinaryText+LeftBinaryText
     if i == 15:
-        IV = IV[32:]+IV[:32]
+        BinaryText = BinaryText[32:]+BinaryText[:32]
 
 
 # финальная перестановка
 Permutation = ''
 for i in FinalPermutation:
-    Permutation += IV[i-1]
-IV = Permutation
+    Permutation += BinaryText[i-1]
+BinaryText = Permutation
 
-# получаем расшифрованное собщение
-Permutaion = ''
-for i in range(64):
-    if IV[i] == BinaryText[i]:
-        Permutation += '0'
-    else:
-        Permutation += '1'
+# получаем шифрованное собщение
 for i in range(0, 64, 8):
-    EncodedText += chr(int(Permutation[i:i+8], base=2))
+    EncodedText += chr(int(BinaryText[i:i+8], base=2))
 print(EncodedText)
