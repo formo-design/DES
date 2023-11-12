@@ -53,7 +53,7 @@ PBoxExtention = [32, 1, 2, 3, 4, 5, 4, 5,
                  16, 17, 18, 19, 20, 21, 20, 21,
                  22, 23, 24, 25, 24, 25, 26, 27,
                  28, 29, 28, 29, 30, 31, 32, 1]
-"""РPбокс расширения. Служит для расширения правой части текста до 48 бит"""
+"""Р-Pбокс расширения. Служит для расширения правой части текста до 48 бит"""
 
 SBoxes = [
     [[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
@@ -116,7 +116,7 @@ HelpVar = ''
 RoundKeys = []
 """Список раундовых ключей"""
 
-EncodedText = ''
+EncryptedText = ''
 """Зашифрованный текст"""
 
 DesFunction = ''
@@ -229,5 +229,5 @@ BinaryText = HelpVar
 
 # получаем шифрованное собщение
 for Index in range(0, 64, 8):
-    EncodedText += chr(int(BinaryText[Index:Index+8], base=2))
-print(EncodedText)
+    EncryptedText += chr(int(BinaryText[Index:Index+8], base=2))
+print(EncryptedText)

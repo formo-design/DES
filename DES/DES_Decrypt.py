@@ -1,5 +1,5 @@
-PlainText = open('text.txt', encoding='utf-8').read()
-"""Открытый текст"""
+EncryptedText = open('text.txt', encoding='utf-8').read()
+"""Зашифрованный текст"""
 
 Key = open('key.txt', encoding='utf-8').read()
 """Открытый ключ"""
@@ -53,7 +53,7 @@ PBoxExtention = [32, 1, 2, 3, 4, 5, 4, 5,
                  16, 17, 18, 19, 20, 21, 20, 21,
                  22, 23, 24, 25, 24, 25, 26, 27,
                  28, 29, 28, 29, 30, 31, 32, 1]
-"""РPбокс расширения. Служит для расширения правой части текста до 48 бит"""
+"""Р-бокс расширения. Служит для расширения правой части текста до 48 бит"""
 
 SBoxes = [
     [[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
@@ -116,15 +116,15 @@ HelpVar = ''
 RoundKeys = []
 """Список раундовых ключей"""
 
-EncodedText = ''
-"""Зашифрованный текст"""
+DecryptedText = ''
+"""Расшифрованный текст"""
 
 DesFunction = ''
 """Переменная, принимающая изменения в функции DES"""
 
 '''ПОДГОТОВКА БИНАРНЫХ ТЕКСТА И КЛЮЧА'''
 # перевод открытого текста в бинарный формат и начальная перестановка
-for symbol in PlainText:
+for symbol in EncryptedText:
     BinarySymbol = bin(ord(symbol))[2:]
     while len(BinarySymbol) < 8:
         BinarySymbol = '0'+BinarySymbol
@@ -229,5 +229,5 @@ BinaryText = HelpVar
 
 # получаем шифрованное собщение
 for Index in range(0, 64, 8):
-    EncodedText += chr(int(BinaryText[Index:Index+8], base=2))
-print(EncodedText)
+    DecryptedText += chr(int(BinaryText[Index:Index+8], base=2))
+print(DecryptedText)
